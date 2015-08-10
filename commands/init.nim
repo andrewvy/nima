@@ -5,6 +5,7 @@ import docopt
 
 proc init(args: Table) =
     var F_VERBOSE = false
+    var WORK_DIRS = ["assets", "assets/javascripts", "assets/stylesheets", "content", "public", "static", "layouts"]
     var CURRENT_DIR: string
     var project_file, project_name: string
     var project_file_out: File
@@ -18,7 +19,7 @@ proc init(args: Table) =
         echo "Please enter in a project name: "
         project_name = readLine(stdin)
 
-    echo "Initializing new Nima project!"
+    echo "Initializing new Nima project! >> " & project_name
 
     # Init project directory
     project_file = "config.toml"
@@ -27,16 +28,19 @@ proc init(args: Table) =
     try:
         if existsDir(CURRENT_DIR / project_name):
             raise newException(NimaError, "Directory already exists with that name: " & project_name)
+        if (F_VERBOSE):
+            echo "Initializing main directory >> " & project_name
         createDir(CURRENT_DIR / project_name)
     except NimaError:
         echo "ERROR: " & getCurrentExceptionMsg()
 
     # Init config files
-
     try:
         if existsFile(CURRENT_DIR / project_name / project_file):
             raise newException(NimaError, "Nima project file already exists in project directory!")
         if open(f=projectFileOut, filename = CURRENT_DIR/project_name/project_file, mode = fmWrite):
+            if (F_VERBOSE):
+                echo "Creating config file >> " & project_name/project_file
             projectFileOut.writeln("title = \"" & project_name & "\"")
             projectFileOut.writeln("version = \"0.1.0\"")
             projectFileOut.writeln("author = \"Anonymous\"")
@@ -45,3 +49,12 @@ proc init(args: Table) =
             raise newException(NimaError, "Failed to create .nima config file")
     except NimaError:
         echo "ERROR: " & getCurrentExceptionMsg()
+
+    # Create work directories
+    for i, dir in WORK_DIRS:
+        try:
+            if (F_VERBOSE):
+                echo "Creating work dir >> " & project_name/project_file
+            createDir(CURRENT_DIR / project_name / dir )
+        except NimaError:
+            echo "ERROR: " & getCurrentExceptionMsg()
