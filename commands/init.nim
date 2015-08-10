@@ -1,10 +1,12 @@
+import seed
 import types
+
 import os
 import strutils
 import docopt
 
-proc init(args: Table) =
-    var F_VERBOSE = false
+proc init*(args: Table) =
+    var F_VERBOSE, F_SEED = false
     var WORK_DIRS = ["assets", "assets/javascripts", "assets/stylesheets", "content", "public", "static", "layouts"]
     var CURRENT_DIR: string
     var project_file, project_name: string
@@ -12,6 +14,9 @@ proc init(args: Table) =
 
     if args["-v"]:
         F_VERBOSE = true
+
+    if args["-s"]:
+        F_SEED = true
 
     if args["<project_name>"]:
         project_name = $args["<project_name>"]
@@ -58,3 +63,7 @@ proc init(args: Table) =
             createDir(CURRENT_DIR / project_name / dir )
         except NimaError:
             echo "ERROR: " & getCurrentExceptionMsg()
+
+    if F_SEED:
+        var options = init_table[string, Value]()
+        sample_seed(options)
