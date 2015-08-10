@@ -1,1 +1,1 @@
-include commands/main
+import commands/main
