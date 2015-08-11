@@ -7,7 +7,7 @@ import docopt
 
 proc init*(args: Table) =
     var F_VERBOSE, F_SEED = false
-    var WORK_DIRS = ["assets", "assets/javascripts", "assets/stylesheets", "content", "public", "static", "layouts"]
+    var WORK_DIRS = ["assets", "assets/javascripts", "assets/stylesheets", "content", "public", "static", "layouts", "layouts/partials"]
     var CURRENT_DIR: string
     var project_file, project_name: string
     var project_file_out: File
@@ -65,5 +65,8 @@ proc init*(args: Table) =
             echo "ERROR: " & getCurrentExceptionMsg()
 
     if F_SEED:
-        var options = init_table[string, Value]()
+        var options = init_table[string, string]()
+        options["project_dir"] = CURRENT_DIR/project_name
+        if (F_VERBOSE):
+            echo "Copying seed project data >> " & project_name
         sample_seed(options)
