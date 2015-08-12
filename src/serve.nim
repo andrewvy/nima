@@ -1,5 +1,8 @@
-import docopt
-import strutils
+import jester, asyncdispatch, strutils, math, os, asyncnet, re
+
+routes:
+    get "/testing":
+        resp "foo"
 
 proc serve*(args: Table) =
-    echo "Development web server started on port $1" % [$args["--port"]]
+    runForever()
