@@ -1,8 +1,10 @@
+import types
+
 import os
 import streams
 import strutils
 import parsexml
 
-proc addTemplateFile*(filepath: string): string =
+proc addTemplateFile*(f: FileItem): string =
     result = ""
-    result = readFile(filepath)
+    result = readFile(f.path)

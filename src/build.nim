@@ -7,49 +7,32 @@ import tables
 import parsexml
 import strutils
 
-type
-    fileItem* = ref object of RootObj
-        path: string
-        localpath: string
-        filepath: string
-        fileext: string
-        filename: string
-
-    fileCollection* = ref object of RootObj
-        fileext: string
-        fileitems: seq[fileItem]
-
 proc makeDirs(dirs: seq[string]) =
     for dir in dirs:
         if not dirExists("public/" & dir): createDir("public/" & dir)
 
-proc compile_html(c: fileCollection) =
+proc compile_html(c: FileCollection) =
     let files = c.fileitems
     var templateCache = init_table[string, string]()
     var directoryCache = newSeq[string]()
 
     for file in files:
-        echo "Compiling.. " & file.filepath
-        templateCache.add(file.filepath, addTemplateFile(file.path))
-        if not directoryCache.contains(file.localpath): directoryCache.add(file.localpath)
+        echo "Compiling.. " & file.filename & file.fileext
+        var data = addTemplateFile(file)
+        templateCache.add(file.filepath, data)
 
-    for dir in directoryCache:
-        echo "DIRECTORY: " & dir
-
-    makeDirs(directoryCache)
-
-proc compile(t: Table[string, fileCollection]) =
+proc compile(t: Table[string, FileCollection]) =
     for key, c in t:
         case key
             of ".html": compile_html(c)
             else: discard
 
-proc build_file_hash(current_dir: string): Table[string, fileCollection] =
-    result = init_table[string, fileCollection]()
+proc build_file_hash(current_dir: string): Table[string, FileCollection] =
+    result = init_table[string, FileCollection]()
 
     for path in walkDirRec(current_dir):
-        var i = fileItem()
-        var c = fileCollection()
+        var i = FileItem()
+        var c = FileCollection()
         let s = splitFile(path)
 
         i.path = path
