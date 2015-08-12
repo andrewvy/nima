@@ -10,6 +10,7 @@ import strutils
 type
     fileItem* = ref object of RootObj
         path: string
+        localpath: string
         filepath: string
         fileext: string
         filename: string
@@ -18,14 +19,24 @@ type
         fileext: string
         fileitems: seq[fileItem]
 
+proc makeDirs(dirs: seq[string]) =
+    for dir in dirs:
+        if not dirExists("public/" & dir): createDir("public/" & dir)
+
 proc compile_html(c: fileCollection) =
     let files = c.fileitems
     var templateCache = init_table[string, string]()
-    var directoryCache = init_table[string, string]()
+    var directoryCache = newSeq[string]()
 
     for file in files:
         echo "Compiling.. " & file.filepath
         templateCache.add(file.filepath, addTemplateFile(file.path))
+        if not directoryCache.contains(file.localpath): directoryCache.add(file.localpath)
+
+    for dir in directoryCache:
+        echo "DIRECTORY: " & dir
+
+    makeDirs(directoryCache)
 
 proc compile(t: Table[string, fileCollection]) =
     for key, c in t:
@@ -42,6 +53,7 @@ proc build_file_hash(current_dir: string): Table[string, fileCollection] =
         let s = splitFile(path)
 
         i.path = path
+        i.localpath = s[0].copy(len(current_dir)+1)
         i.filepath = s[0]
         i.filename = s[1]
         i.fileext = s[2]
