@@ -1,1 +1,1 @@
-import commands/main
+import src/main

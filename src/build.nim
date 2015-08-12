@@ -18,7 +18,7 @@ proc compile_html(current_dir: string) =
     echo "Compiling HTML"
 
 proc build_file_hash(current_dir: string) =
-    var t = Table[string, fileCollection]()
+    var t = init_table[string, fileCollection]()
 
     for path in walkDirRec(current_dir, {pcFile}):
         var i = fileItem()
@@ -27,14 +27,13 @@ proc build_file_hash(current_dir: string) =
         i.filepath = path
         i.filetype = s[high(s)]
 
-        if t[i.filetype] of fileCollection:
-            t.add(i.filetype, c)
-
-#        c = t[i.file_type]
-#        if not len(c.fileitems) > 0:
-#            c.fileitems = @[]
-
-#        add(c.fileitems, i)
+        if not t.hasKey(i.filetype):
+           t.add(i.filetype, c)
+        else:
+            c = t[i.file_type]
+            if not len(c.fileitems) > 0:
+                c.fileitems = @[]
+            add(c.fileitems, i)
 
 proc build*(args: Table) =
     let current_dir = os.getCurrentDir()
