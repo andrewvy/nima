@@ -27,9 +27,14 @@ proc compile_html(c: fileCollection) =
         echo "Compiling.. " & file.filepath
         templateCache.add(file.filepath, addTemplateFile(file.path))
 
+proc compile(t: Table[string, fileCollection]) =
+    for key, c in t:
+        case key
+            of ".html": compile_html(c)
+            else: discard
 
-proc build_file_hash(current_dir: string) =
-    var t = init_table[string, fileCollection]()
+proc build_file_hash(current_dir: string): Table[string, fileCollection] =
+    result = init_table[string, fileCollection]()
 
     for path in walkDirRec(current_dir):
         var i = fileItem()
@@ -41,20 +46,15 @@ proc build_file_hash(current_dir: string) =
         i.filename = s[1]
         i.fileext = s[2]
 
-        if not t.hasKey(i.fileext):
+        if not result.hasKey(i.fileext):
             c.fileext = i.fileext
-            t.add(i.fileext, c)
+            result.add(i.fileext, c)
 
-        c = t[i.fileext]
+        c = result[i.fileext]
         if len(c.fileitems) == 0:
             c.fileitems = @[]
 
         add(c.fileitems, i)
-
-    for key, c in t:
-        case key
-        of ".html":
-            compile_html(c)
 
 
 proc build*(args: Table) =
@@ -64,7 +64,8 @@ proc build*(args: Table) =
     try:
         if existsFile(current_dir/config_file):
             echo "Building Nima project.."
-            build_file_hash(current_dir)
+            var file_hash = build_file_hash(current_dir)
+            compile(file_hash)
         else:
             raise newException(NimaError, "Not currently in a Nima project!")
     except NimaError:
