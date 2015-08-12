@@ -7,11 +7,17 @@ import tables
 import parsexml
 import strutils
 
+proc writeTemplate(path: string, data: string) =
+    writeFile(path, data)
+
 proc makeDirs(dirs: seq[string]) =
     for dir in dirs:
         if not dirExists("public/" & dir): createDir("public/" & dir)
 
-proc compile_html(c: FileCollection) =
+proc compile_html(project_dir: string, c: FileCollection) =
+    const INDEX_FILE = "layouts/index.html"
+    const PUBLIC_DIR = "public"
+
     let files = c.fileitems
     var templateCache = init_table[string, string]()
     var directoryCache = newSeq[string]()
@@ -19,12 +25,16 @@ proc compile_html(c: FileCollection) =
     for file in files:
         echo "Compiling.. " & file.filename & file.fileext
         var data = addTemplateFile(file)
-        templateCache.add(file.filepath, data)
+        echo "CACHED TEMPLATE: " & file.localpath/file.filename&file.fileext
+        templateCache.add(file.localpath / file.filename & file.fileext, data)
 
-proc compile(t: Table[string, FileCollection]) =
+    if templateCache.hasKey(INDEX_FILE):
+        writeTemplate("public/index.html", templateCache[INDEX_FILE])
+
+proc compile(project_dir: string, t: Table[string, FileCollection]) =
     for key, c in t:
         case key
-            of ".html": compile_html(c)
+            of ".html": compile_html(project_dir, c)
             else: discard
 
 proc build_file_hash(current_dir: string): Table[string, FileCollection] =
@@ -60,7 +70,7 @@ proc build*(args: Table) =
         if existsFile(current_dir/config_file):
             echo "Building Nima project.."
             var file_hash = build_file_hash(current_dir)
-            compile(file_hash)
+            compile(current_dir, file_hash)
         else:
             raise newException(NimaError, "Not currently in a Nima project!")
     except NimaError:
