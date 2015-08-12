@@ -10,8 +10,8 @@ let seed_header*: string = """
 let seed_index*: string = """
 <partial src="header.html">
 <div class="container">
-    <div class="row">
-    </div>
+    <h1>Hello From Nima</h1>
+    <h2>Static website generator built with <a href="http://nim-lang.org">Nim</a></h2>
 </div>
 <partial src="footer.html">
 """

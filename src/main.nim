@@ -11,7 +11,7 @@ let DOC = """
 
     Usage:
         nima init [-vs] [<project_name>]
-        nima serve (--port=<port>)
+        nima serve
         nima build
         nima seed <type>
         nima -h, --help
@@ -22,7 +22,6 @@ let DOC = """
         --version                  Show version.
         -v                         Toggle verbose mode.
         -s                         Generates with seed data.
-        -p=<port>, --port=<port>   Set port [default=3005].
 """
 
 let VERSION = "nima 0.1"
