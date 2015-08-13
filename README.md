@@ -17,14 +17,26 @@ nimble install
 nim c nima.nim
 ```
 
+# Get Started
+
+Initialize a new Nima project!
+
+`nima init -vs new_project_folder`
+
+Compile and build the seed data!
+`cd new_project_folder`
+`nima build`
+
 # Usage
 
 ```
     nima - static website generator in Nim
 
     Usage:
-        nima init [-v] [<project_name>]
-        nima serve (--port=<port>)
+        nima init [-vs] [<project_name>]
+        nima serve
+        nima build
+        nima seed <type> <name>
         nima -h, --help
         nima --version
 
@@ -32,5 +44,5 @@ nim c nima.nim
         -h, --help                 Show this screen
         --version                  Show version.
         -v                         Toggle verbose mode.
-        -p=<port>, --port=<port>   Set port [default=3005].
+        -s                         Generates with seed data.
 ```
