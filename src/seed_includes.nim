@@ -16,6 +16,19 @@ let seed_index*: string = """
 <partial src="footer.html">
 """
 
+let seed_post*: string = """
+<partial src="header.html">
+<div class="container">
+	<div class="post">
+		<div class="post--title">POST TITLE</div>
+		<div class="post--body">
+			<p>POST BODY</p>
+		</div>
+	</div>
+</div>
+<partial src="footer.html">
+"""
+
 let seed_footer*: string = """
 </body>
 </html>

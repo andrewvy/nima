@@ -10,13 +10,22 @@ proc makeDirs(dirs: seq[string]) =
     for dir in dirs:
         if not dirExists("public/" & dir): createDir("public/" & dir)
 
+proc cache_layout(layout: Layout, partialCache: Table[string, string]): string =
+    echo "Caching layout... " & layout.layout_path
+    result = get_layout_data(layout, partialCache)
+
+proc cache_layouts(layouts: seq[Layout], partialCache: Table[string, string]): Table[string, string] =
+    result = init_table[string, string]()
+
+    for layout in layouts:
+        result[layout.layout_path] = cache_layout(layout, partialCache)
+
 proc cache_partial(partial: Layout): string =
     echo "Caching partial... " & partial.layout_path
-    result = readAll(partial.layout_file)
-    partial.layout_file.close()
+    result = get_partial_data(partial)
 
 proc cache_partials(partials: seq[Layout]): Table[string, string] =
-    result = init_table[string, string](len(partials))
+    result = init_table[string, string]()
 
     for partial in partials:
         result[partial.layout_path] = cache_partial(partial)
@@ -51,7 +60,8 @@ proc compile_html(project_dir: string, c: FileCollection) =
             compiled_layouts.add(l)
 
     partialCache = cache_partials(partial_layouts)
-    echo "Finished caching partials!"
+    parse_and_write_layouts(static_layouts, partialCache)
+    layoutCache = cache_layouts(compiled_layouts, partialCache)
 
 proc compile(project_dir: string, t: Table[string, FileCollection]) =
     for key, c in t:
@@ -80,6 +90,7 @@ proc build_file_hash(current_dir: string): Table[string, FileCollection] =
             result.add(i.fileext, c)
 
         c = result[i.fileext]
+
         if len(c.fileitems) == 0:
             c.fileitems = @[]
 
@@ -94,6 +105,7 @@ proc build*(args: Table) =
         if existsFile(current_dir/config_file):
             echo "Building Nima project.."
             var file_hash = build_file_hash(current_dir)
+
             compile(current_dir, file_hash)
         else:
             raise newException(NimaError, "Not currently in a Nima project!")

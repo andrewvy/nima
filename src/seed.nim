@@ -19,9 +19,10 @@ proc sample_seed*(args: Table) =
     var partial_data = init_table[string, string]()
     partial_data["partials/header.html"] = seed_header
     partial_data["partials/footer.html"] = seed_footer
-    partial_data["index.html"] = seed_index
+    partial_data["index.static.html"] = seed_index
+    partial_data["post/single.html"] = seed_post
 
-    for i, partial in ["partials/header.html", "partials/footer.html", "index.html"]:
+    for i, file in ["partials/header.html", "partials/footer.html", "index.html"]:
         try:
             if existsFile(project_dir / "layouts" /partial):
                 raise newException(NimaError, "Nima project file already exists in project directory!")
