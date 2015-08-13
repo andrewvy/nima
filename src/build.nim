@@ -1,11 +1,7 @@
 import types
 import parser
 
-import os
-import docopt
-import tables
-import parsexml
-import strutils
+import os, docopt, tables, strutils
 
 proc writeTemplate(path: string, data: string) =
     writeFile(path, data)
@@ -17,19 +13,26 @@ proc makeDirs(dirs: seq[string]) =
 proc compile_html(project_dir: string, c: FileCollection) =
     const INDEX_FILE = "layouts/index.html"
     const PUBLIC_DIR = "public"
-
+    var partial_layouts, static_layouts, compiled_layouts = newSeq[Layout]()
     let files = c.fileitems
-    var templateCache = init_table[string, string]()
-    var directoryCache = newSeq[string]()
 
+    # Split files between layout types: Partial, Static, Compiled
     for file in files:
-        echo "Compiling.. " & file.filename & file.fileext
-        var data = addTemplateFile(file)
-        echo "CACHED TEMPLATE: " & file.localpath/file.filename&file.fileext
-        templateCache.add(file.localpath / file.filename & file.fileext, data)
+        var l = Layout()
+        var f = addTemplateFile(file)
 
-    if templateCache.hasKey(INDEX_FILE):
-        writeTemplate("public/index.html", templateCache[INDEX_FILE])
+        if file.path.contains("partial"):
+            l.layout_type = PartialLayout
+            l.layout_file = f
+            partial_layouts.add(l)
+        elif file.filename.contains(".static"):
+            l.layout_type = StaticLayout
+            l.layout_file = f
+            static_layouts.add(l)
+        else:
+            l.layout_type = CompiledLayout
+            l.layout_file = f
+            compiled_layouts.add(l)
 
 proc compile(project_dir: string, t: Table[string, FileCollection]) =
     for key, c in t:
@@ -41,12 +44,14 @@ proc build_file_hash(current_dir: string): Table[string, FileCollection] =
     result = init_table[string, FileCollection]()
 
     for path in walkDirRec(current_dir):
+        if path.contains("public"): continue
+
         var i = FileItem()
         var c = FileCollection()
         let s = splitFile(path)
 
         i.path = path
-        i.localpath = s[0].copy(len(current_dir)+1)
+        i.localpath = s[0].replace("layouts", "").copy(len(current_dir)+1)
         i.filepath = s[0]
         i.filename = s[1]
         i.fileext = s[2]
