@@ -10,15 +10,15 @@ proc makeDirs(dirs: seq[string]) =
     for dir in dirs:
         if not dirExists("public/" & dir): createDir("public/" & dir)
 
-proc cache_layout(layout: Layout, partialCache: Table[string, string]): string =
+proc cache_layout(layout: Layout, partialDir: string, partialCache: Table[string, string]): string =
     echo "Caching layout... " & layout.layout_path
-    result = get_layout_data(layout, partialCache)
+    result = get_layout_data(layout, partialDir, partialCache)
 
-proc cache_layouts(layouts: seq[Layout], partialCache: Table[string, string]): Table[string, string] =
+proc cache_layouts(layouts: seq[Layout], partialDir: string, partialCache: Table[string, string]): Table[string, string] =
     result = init_table[string, string]()
 
     for layout in layouts:
-        result[layout.layout_path] = cache_layout(layout, partialCache)
+        result[layout.layout_path] = cache_layout(layout, partialDir, partialCache)
 
 proc cache_partial(partial: Layout): string =
     echo "Caching partial... " & partial.layout_path
@@ -39,6 +39,7 @@ proc compile_html(project_dir: string, c: FileCollection) =
 
     let files = c.fileitems
     let current_dir = os.getCurrentDir()
+    let partial_dir = current_dir / "layouts/partials/"
 
     # Split files between layout types: Partial, Static, Compiled
     for file in files:
@@ -61,11 +62,11 @@ proc compile_html(project_dir: string, c: FileCollection) =
             compiled_layouts.add(l)
 
     partialCache = cache_partials(partial_layouts)
-    layoutCache = cache_layouts(compiled_layouts, partialCache)
+    layoutCache = cache_layouts(compiled_layouts, partialDir, partialCache)
 
     for layout in static_layouts:
         echo "Compiling static template.. "
-        write_layout(format_path(current_dir, layout.layout_path), get_layout_data(layout, partialCache))
+        write_layout(format_path(current_dir, layout.layout_path), get_layout_data(layout, partialDir, partialCache))
 
 proc compile(project_dir: string, t: Table[string, FileCollection]) =
     for key, c in t:
