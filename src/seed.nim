@@ -13,21 +13,28 @@ proc template_seed*(args: Table) =
 
 proc sample_seed*(args: Table) =
     let project_dir = args["project_dir"]
-    let partials = ["header", "footer"]
+    let dirs = ["partials", "post"]
 
-    # Create Partials
-    var partial_data = init_table[string, string]()
-    partial_data["partials/header.html"] = seed_header
-    partial_data["partials/footer.html"] = seed_footer
-    partial_data["index.static.html"] = seed_index
-    partial_data["post/single.html"] = seed_post
-
-    for i, file in ["partials/header.html", "partials/footer.html", "index.html"]:
+    # Create dirs
+    for dir in dirs:
         try:
-            if existsFile(project_dir / "layouts" /partial):
+            createDir(project_dir / "layouts" / dir )
+        except NimaError:
+            echo "ERROR: " & getCurrentExceptionMsg()
+
+    # Create seed files
+    var seed_data = init_table[string, string]()
+    seed_data["partials/header.html"] = seed_header
+    seed_data["partials/footer.html"] = seed_footer
+    seed_data["index.static.html"] = seed_index
+    seed_data["post/single.html"] = seed_post
+
+    for filename, data in seed_data:
+        try:
+            if existsFile(project_dir / "layouts" / filename):
                 raise newException(NimaError, "Nima project file already exists in project directory!")
             try:
-                writeFile(project_dir / "layouts" / partial, partial_data[partial])
+                writeFile(project_dir / "layouts" / filename, data)
             except IOError:
                 echo: "ERROR: " & getCurrentExceptionMsg()
 

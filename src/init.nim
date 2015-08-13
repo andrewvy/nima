@@ -7,7 +7,7 @@ import docopt
 
 proc init*(args: Table) =
     var F_VERBOSE, F_SEED = false
-    var WORK_DIRS = ["assets", "assets/javascripts", "assets/stylesheets", "content", "public", "static", "layouts", "layouts/partials"]
+    var WORK_DIRS = ["assets", "assets/javascripts", "assets/stylesheets", "content", "public", "static", "layouts"]
     var CURRENT_DIR: string
     var project_file, project_name: string
     var project_file_out: File
@@ -24,20 +24,21 @@ proc init*(args: Table) =
         echo "Please enter in a project name: "
         project_name = readLine(stdin)
 
-    echo "Initializing new Nima project! >> " & project_name
-
     # Init project directory
     project_file = "config.toml"
     CURRENT_DIR = os.getCurrentDir()
 
     try:
         if existsDir(CURRENT_DIR / project_name):
-            raise newException(NimaError, "Directory already exists with that name: " & project_name)
+            raise newException(NimaError, "Directory already exists with that name: " & project_name & "/")
         if (F_VERBOSE):
-            echo "Initializing main directory >> " & project_name
+            echo "Initializing main directory >> " & project_name & "/"
         createDir(CURRENT_DIR / project_name)
     except NimaError:
         echo "ERROR: " & getCurrentExceptionMsg()
+        quit()
+
+    echo "Initializing new Nima project! >> " & project_name & "/"
 
     # Init config files
     try:
@@ -56,10 +57,10 @@ proc init*(args: Table) =
         echo "ERROR: " & getCurrentExceptionMsg()
 
     # Create work directories
-    for i, dir in WORK_DIRS:
+    for dir in WORK_DIRS:
         try:
             if (F_VERBOSE):
-                echo "Creating work dir >> " & project_name/project_file
+                echo "Creating work dir >> " & project_name/dir
             createDir(CURRENT_DIR / project_name / dir )
         except NimaError:
             echo "ERROR: " & getCurrentExceptionMsg()
