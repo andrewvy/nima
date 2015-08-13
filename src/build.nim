@@ -38,11 +38,12 @@ proc compile_html(project_dir: string, c: FileCollection) =
     var partialCache, layoutCache = init_table[string, string]()
 
     let files = c.fileitems
+    let current_dir = os.getCurrentDir()
 
     # Split files between layout types: Partial, Static, Compiled
     for file in files:
         var l = Layout()
-        var f = addTemplateFile(file)
+        var f = add_template_file(file)
 
         l.layout_path = file.path
 
@@ -60,8 +61,11 @@ proc compile_html(project_dir: string, c: FileCollection) =
             compiled_layouts.add(l)
 
     partialCache = cache_partials(partial_layouts)
-    parse_and_write_layouts(static_layouts, partialCache)
     layoutCache = cache_layouts(compiled_layouts, partialCache)
+
+    for layout in static_layouts:
+        echo "Compiling static template.. "
+        write_layout(format_path(current_dir, layout.layout_path), get_layout_data(layout, partialCache))
 
 proc compile(project_dir: string, t: Table[string, FileCollection]) =
     for key, c in t:
