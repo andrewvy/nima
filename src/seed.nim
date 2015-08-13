@@ -7,7 +7,7 @@ import strutils
 
 proc write_seed*(name: string, dir: string, data: string) =
     try:
-        writeFile(dir/name, data)
+        writeFile(dir/name & ".html", data)
     except IOError:
         echo "ERROR: " & getCurrentExceptionMsg()
 
@@ -17,12 +17,13 @@ proc type_seed*(args: Table) =
 
     case $args["<type>"]
         of "layout":
-            echo "Creating layout.. " & project_dir / "layouts" / name
+            echo "Creating layout.. " & project_dir / "layouts" / name & ".html"
             if not dirExists(project_dir / "layouts" / name):
                 createDir(project_dir / "layouts" / name)
             write_seed(name, project_dir/"layouts"/name&"/", seed_layout(name))
         of "partial":
-            write_seed(name, project_dir/"layouts/partials", seed_layout(name))
+            echo "Creating partial.. " & project_dir / "layouts/partials" / name & ".html"
+            write_seed(name, project_dir/"layouts/partials", seed_partial(name))
 
 proc sample_seed*(args: Table) =
     let project_dir = args["project_dir"]

@@ -50,3 +50,9 @@ proc seed_layout*(content_type: string): string = tmpli html"""
 	</div>
 </div>
 """
+
+proc seed_partial*(name: string): string = tmpli html"""
+<div class="partial--$name">
+    Partial $name
+</div>
+"""
