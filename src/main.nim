@@ -3,8 +3,11 @@ import seed
 import build
 import serve
 
-import docopt
-import strutils
+import docopt, os, strutils
+
+proc inNimaProject(): bool =
+    let config_file = "config.toml"
+    result = existsFile(os.getCurrentDir()/config_file)
 
 let DOC = """
     nima - static website generator in Nim
@@ -13,7 +16,7 @@ let DOC = """
         nima init [-vs] [<project_name>]
         nima serve
         nima build
-        nima seed <type>
+        nima seed <type> <name>
         nima -h, --help
         nima --version
 
@@ -30,9 +33,14 @@ let args = docopt(DOC, version=VERSION)
 
 if args["init"]:
     init(args)
-if args["serve"]:
-    serve(args)
-if args["build"]:
-    build(args)
-if args["seed"]:
-    type_seed(args)
+else:
+    if not inNimaProject():
+        echo "Not currently in a Nima project!"
+        quit()
+
+    if args["serve"]:
+        serve(args)
+    if args["build"]:
+        build(args)
+    if args["seed"]:
+        type_seed(args)

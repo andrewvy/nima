@@ -1,3 +1,5 @@
+import templates
+
 let seed_header*: string = """
 <!doctype html>
 <html lang="en">
@@ -34,3 +36,17 @@ let seed_footer*: string = """
 </html>
 """
 
+# -------------------
+# Templated seed data
+# -------------------
+
+proc seed_layout*(content_type: string): string = tmpli html"""
+<div class="container">
+	<div class="post">
+		<div class="$content_type--title">$content_type header</div>
+		<div class="$content_type--body">
+			<p>$content_type body</p>
+		</div>
+	</div>
+</div>
+"""

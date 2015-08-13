@@ -5,11 +5,24 @@ import os
 import docopt
 import strutils
 
-proc type_seed*(args: Table) =
-    echo "Type seed"
+proc write_seed*(name: string, dir: string, data: string) =
+    try:
+        writeFile(dir/name, data)
+    except IOError:
+        echo "ERROR: " & getCurrentExceptionMsg()
 
-proc template_seed*(args: Table) =
-    echo "Template seed.."
+proc type_seed*(args: Table) =
+    let project_dir = os.getCurrentDir()
+    let name = $args["<name>"]
+
+    case $args["<type>"]
+        of "layout":
+            echo "Creating layout.. " & project_dir / "layouts" / name
+            if not dirExists(project_dir / "layouts" / name):
+                createDir(project_dir / "layouts" / name)
+            write_seed(name, project_dir/"layouts"/name&"/", seed_layout(name))
+        of "partial":
+            write_seed(name, project_dir/"layouts/partials", seed_layout(name))
 
 proc sample_seed*(args: Table) =
     let project_dir = args["project_dir"]
@@ -36,7 +49,7 @@ proc sample_seed*(args: Table) =
             try:
                 writeFile(project_dir / "layouts" / filename, data)
             except IOError:
-                echo: "ERROR: " & getCurrentExceptionMsg()
+                echo "ERROR: " & getCurrentExceptionMsg()
 
         except NimaError:
             echo "ERROR: " & getCurrentExceptionMsg()
