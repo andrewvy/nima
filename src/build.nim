@@ -1,7 +1,7 @@
 import types
 import parser
 
-import os, docopt, tables, strutils
+import os, docopt, tables, strutils, threadpool
 
 proc writeTemplate(path: string, data: string) =
     writeFile(path, data)
@@ -10,16 +10,32 @@ proc makeDirs(dirs: seq[string]) =
     for dir in dirs:
         if not dirExists("public/" & dir): createDir("public/" & dir)
 
+proc cache_partial(partial: Layout): string =
+    echo "Caching partial... " & partial.layout_path
+    result = readAll(partial.layout_file)
+    partial.layout_file.close()
+
+proc cache_partials(partials: seq[Layout]): Table[string, string] =
+    result = init_table[string, string](len(partials))
+
+    for partial in partials:
+        result[partial.layout_path] = cache_partial(partial)
+
 proc compile_html(project_dir: string, c: FileCollection) =
     const INDEX_FILE = "layouts/index.html"
     const PUBLIC_DIR = "public"
+
     var partial_layouts, static_layouts, compiled_layouts = newSeq[Layout]()
+    var partialCache, layoutCache = init_table[string, string]()
+
     let files = c.fileitems
 
     # Split files between layout types: Partial, Static, Compiled
     for file in files:
         var l = Layout()
         var f = addTemplateFile(file)
+
+        l.layout_path = file.path
 
         if file.path.contains("partial"):
             l.layout_type = PartialLayout
@@ -33,6 +49,9 @@ proc compile_html(project_dir: string, c: FileCollection) =
             l.layout_type = CompiledLayout
             l.layout_file = f
             compiled_layouts.add(l)
+
+    partialCache = cache_partials(partial_layouts)
+    echo "Finished caching partials!"
 
 proc compile(project_dir: string, t: Table[string, FileCollection]) =
     for key, c in t:

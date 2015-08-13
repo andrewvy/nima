@@ -17,9 +17,10 @@ type
 
     Layout* = ref object of RootObj
         layout_type*: LayoutType
+        layout_path*: string
         content_type*: string
-        layout_file*: File
         dependencies*: seq[Layout]
+        layout_file*: File
 
     Content* = ref object of RootObj
         content_type*: string
