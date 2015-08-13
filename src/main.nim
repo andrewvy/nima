@@ -6,7 +6,7 @@ import serve
 import docopt, os, strutils
 
 proc inNimaProject(): bool =
-    let config_file = "config.toml"
+    let config_file = "config.json"
     result = existsFile(os.getCurrentDir()/config_file)
 
 let DOC = """

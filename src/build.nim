@@ -1,7 +1,7 @@
 import types
 import parser
 
-import os, docopt, tables, strutils
+import os, docopt, tables, strutils, json, stopwatch
 
 proc writeTemplate(path: string, data: string) =
     writeFile(path, data)
@@ -30,13 +30,14 @@ proc cache_partials(partials: seq[Layout]): Table[string, string] =
     for partial in partials:
         result[partial.layout_path] = cache_partial(partial)
 
-proc compile_html(project_dir: string, c: FileCollection) =
+proc compile_html(project_dir: string, c: FileCollection, project_data: JsonNode) =
+    var cl: clock
+    cl.start()
+
     const INDEX_FILE = "layouts/index.html"
     const PUBLIC_DIR = "public"
-
     var partial_layouts, static_layouts, compiled_layouts = newSeq[Layout]()
     var partialCache, layoutCache = init_table[string, string]()
-
     let files = c.fileitems
     let current_dir = os.getCurrentDir()
     let partial_dir = current_dir / "layouts/partials/"
@@ -65,13 +66,19 @@ proc compile_html(project_dir: string, c: FileCollection) =
     layoutCache = cache_layouts(compiled_layouts, partialDir, partialCache)
 
     for layout in static_layouts:
-        echo "Compiling static template.. "
-        write_layout(format_path(current_dir, layout.layout_path), get_layout_data(layout, partialDir, partialCache))
+        let rendered_layout: string = render_layout(get_layout_data(layout, partialDir, partialCache), project_data)
+        write_layout(format_path(current_dir, layout.layout_path), rendered_layout)
+
+    cl.stop()
+
+    echo "Completed template compilation in "& ($(float(cl.clockStop - cl.clockStart)/1000000) & "ms")
 
 proc compile(project_dir: string, t: Table[string, FileCollection]) =
+    let project_file = "config.json"
+    var project_data = parseFile(os.getCurrentDir()/project_file)
     for key, c in t:
         case key
-            of ".html": compile_html(project_dir, c)
+            of ".html": compile_html(project_dir, c, project_data)
             else: discard
 
 proc build_file_hash(current_dir: string): Table[string, FileCollection] =
@@ -101,10 +108,9 @@ proc build_file_hash(current_dir: string): Table[string, FileCollection] =
 
         add(c.fileitems, i)
 
-
 proc build*(args: Table) =
     let current_dir = os.getCurrentDir()
-    let config_file = "config.toml"
+    let config_file = "config.json"
 
     try:
         if existsFile(current_dir/config_file):

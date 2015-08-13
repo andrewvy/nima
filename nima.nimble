@@ -7,4 +7,4 @@ license       = "MIT"
 bin           = "nima"
 
 [Deps]
-Requires: "nim >= 0.10.0, docopt >= 0.1.0, templates >= 0.1.0"
+Requires: "nim >= 0.10.0, docopt >= 0.1.0, templates >= 0.1.0, stopwatch >= 0.1.0"

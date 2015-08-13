@@ -1,6 +1,6 @@
 import types
 
-import os, streams, tables, strutils, re
+import os, streams, tables, strutils, re, json, stopwatch
 
 proc format_path*(current_dir: string, file_path: string): string =
     let s = splitFile(file_path)
@@ -10,7 +10,6 @@ proc add_template_file*(f: FileItem): File = open(f.path)
 
 proc parse_for_partials(l: Layout, partialPath: string, partialCache: Table[string, string]): string =
     # Parse for partials here..
-    echo "Parsing layout for partials.."
     result = ""
 
     while true:
@@ -36,6 +35,8 @@ proc parse_for_partials(l: Layout, partialPath: string, partialCache: Table[stri
                 result = result & line & "\n"
         else:
             result = result & line & "\n"
+
+proc render_layout*(l: string, s: JsonNode): string = result = l
 
 proc get_partial_data*(l: Layout): string =
     result = readAll(l.layout_file)

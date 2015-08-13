@@ -1,9 +1,7 @@
 import seed
 import types
 
-import os
-import strutils
-import docopt
+import os, strutils, docopt, json
 
 proc init*(args: Table) =
     var F_VERBOSE, F_SEED = false
@@ -25,7 +23,7 @@ proc init*(args: Table) =
         project_name = readLine(stdin)
 
     # Init project directory
-    project_file = "config.toml"
+    project_file = "config.json"
     CURRENT_DIR = os.getCurrentDir()
 
     try:
@@ -47,9 +45,11 @@ proc init*(args: Table) =
         if open(f=projectFileOut, filename = CURRENT_DIR/project_name/project_file, mode = fmWrite):
             if (F_VERBOSE):
                 echo "Creating config file >> " & project_name/project_file
-            projectFileOut.writeln("title = \"" & project_name & "\"")
-            projectFileOut.writeln("version = \"0.1.0\"")
-            projectFileOut.writeln("author = \"Anonymous\"")
+            projectFileOut.writeln("{")
+            projectFileOut.writeln("    \"title\": \"" & project_name & "\",")
+            projectFileOut.writeln("    \"version\": \"0.1.0\",")
+            projectFileOut.writeln("    \"author\": \"Anonymous\"")
+            projectFileOut.writeln("}")
             close(projectFileOut)
         else:
             raise newException(NimaError, "Failed to create .nima config file")
