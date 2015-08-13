@@ -1,8 +1,4 @@
-import jester, asyncdispatch, strutils, math, os, asyncnet, re
-
-routes:
-    get "/testing":
-        resp "foo"
+import tables
 
 proc serve*(args: Table) =
-    runForever()
+    echo "SERVING"

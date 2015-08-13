@@ -1,7 +1,7 @@
 import types
 import parser
 
-import os, docopt, tables, strutils, threadpool
+import os, docopt, tables, strutils
 
 proc writeTemplate(path: string, data: string) =
     writeFile(path, data)
