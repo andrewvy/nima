@@ -56,3 +56,12 @@ proc seed_partial*(name: string): string = tmpli html"""
     Partial $name
 </div>
 """
+
+proc seed_content*(name: string): string = tmpli markdown"""
+{
+    "title": "My new $name"
+    "content_type": "$name"
+}
+
+My new $name
+"""

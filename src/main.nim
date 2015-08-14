@@ -16,7 +16,7 @@ let DOC = """
         nima init [-vs] [<project_name>]
         nima serve
         nima build
-        nima seed <type> <name>
+        nima generate <type> <name>
         nima -h, --help
         nima --version
 
@@ -42,5 +42,5 @@ else:
         serve(args)
     if args["build"]:
         build(args)
-    if args["seed"]:
-        type_seed(args)
+    if args["generate"]:
+        type_generate(args)
