@@ -6,7 +6,7 @@ proc format_path*(current_dir: string, file_path: string): string =
     let s = splitFile(file_path)
     result = "public/" & s[1].replace(".static", "") & s[2]
 
-proc add_template_file*(f: FileItem): File = open(f.path)
+proc add_file*(f: FileItem): File = open(f.path)
 
 proc parse_for_partials(l: Layout, partialPath: string, partialCache: Table[string, string]): string =
     # Parse for partials here..
@@ -37,6 +37,9 @@ proc parse_for_partials(l: Layout, partialPath: string, partialCache: Table[stri
             result = result & line & "\n"
 
 proc render_layout*(l: string, s: JsonNode): string = result = l
+proc get_content_data*(c: Content): string =
+    result = readAll(c.content_file)
+    c.content_file.close()
 
 proc get_partial_data*(l: Layout): string =
     result = readAll(l.layout_file)

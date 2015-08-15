@@ -1,3 +1,5 @@
+import json
+
 type
     FileItem* = ref object of RootObj
         path*: string
@@ -24,6 +26,8 @@ type
 
     Content* = ref object of RootObj
         content_type*: string
+        content_file*: File
+        frontmatter*: JsonNode
 
     NimaError* = object of Exception
     BuildFailed* = object of NimaError
