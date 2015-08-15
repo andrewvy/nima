@@ -51,3 +51,23 @@ proc write_layout*(path: string, data: string) =
         writeFile(path, data)
     except IOError:
         echo "ERROR: " & getCurrentExceptionMsg()
+
+proc cache_layout*(layout: Layout, partialDir: string, partialCache: Table[string, string]): string =
+    echo "Caching layout... " & layout.layout_path
+    result = get_layout_data(layout, partialDir, partialCache)
+
+proc cache_layouts*(layouts: seq[Layout], partialDir: string, partialCache: Table[string, string]): Table[string, string] =
+    result = init_table[string, string]()
+
+    for layout in layouts:
+        result[layout.layout_path] = cache_layout(layout, partialDir, partialCache)
+
+proc cache_partial*(partial: Layout): string =
+    echo "Caching partial... " & partial.layout_path
+    result = get_partial_data(partial)
+
+proc cache_partials*(partials: seq[Layout]): Table[string, string] =
+    result = init_table[string, string]()
+
+    for partial in partials:
+        result[partial.layout_path] = cache_partial(partial)

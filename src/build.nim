@@ -10,60 +10,10 @@ proc makeDirs(dirs: seq[string]) =
     for dir in dirs:
         if not dirExists("public/" & dir): createDir("public/" & dir)
 
-proc cache_layout(layout: Layout, partialDir: string, partialCache: Table[string, string]): string =
-    echo "Caching layout... " & layout.layout_path
-    result = get_layout_data(layout, partialDir, partialCache)
-
-proc cache_layouts(layouts: seq[Layout], partialDir: string, partialCache: Table[string, string]): Table[string, string] =
-    result = init_table[string, string]()
-
-    for layout in layouts:
-        result[layout.layout_path] = cache_layout(layout, partialDir, partialCache)
-
-proc cache_partial(partial: Layout): string =
-    echo "Caching partial... " & partial.layout_path
-    result = get_partial_data(partial)
-
-proc cache_partials(partials: seq[Layout]): Table[string, string] =
-    result = init_table[string, string]()
-
-    for partial in partials:
-        result[partial.layout_path] = cache_partial(partial)
-
-proc compile_html(project_dir: string, c: FileCollection, project_data: JsonNode) =
+proc compile_static_templates(project_dir: string, static_layouts: seq[Layout], partialDir: string, partialCache: Table[string, string], project_data: JsonNode) =
+    let current_dir = os.getCurrentDir()
     var cl: clock
     cl.start()
-
-    const INDEX_FILE = "layouts/index.html"
-    const PUBLIC_DIR = "public"
-    var partial_layouts, static_layouts, compiled_layouts = newSeq[Layout]()
-    var partialCache, layoutCache = init_table[string, string]()
-    let files = c.fileitems
-    let current_dir = os.getCurrentDir()
-    let partial_dir = current_dir / "layouts/partials/"
-
-    # Split files between layout types: Partial, Static, Compiled
-    for file in files:
-        var l = Layout()
-        var f = add_template_file(file)
-
-        l.layout_path = file.path
-
-        if file.path.contains("partial"):
-            l.layout_type = PartialLayout
-            l.layout_file = f
-            partial_layouts.add(l)
-        elif file.filename.contains(".static"):
-            l.layout_type = StaticLayout
-            l.layout_file = f
-            static_layouts.add(l)
-        else:
-            l.layout_type = CompiledLayout
-            l.layout_file = f
-            compiled_layouts.add(l)
-
-    partialCache = cache_partials(partial_layouts)
-    layoutCache = cache_layouts(compiled_layouts, partialDir, partialCache)
 
     for layout in static_layouts:
         let rendered_layout: string = render_layout(get_layout_data(layout, partialDir, partialCache), project_data)
@@ -76,10 +26,41 @@ proc compile_html(project_dir: string, c: FileCollection, project_data: JsonNode
 proc compile(project_dir: string, t: Table[string, FileCollection]) =
     let project_file = "config.json"
     var project_data = parseFile(os.getCurrentDir()/project_file)
-    for key, c in t:
-        case key
-            of ".html": compile_html(project_dir, c, project_data)
-            else: discard
+
+    if t.hasKey(".html"):
+        var c = t[".html"]
+        const INDEX_FILE = "layouts/index.html"
+        const PUBLIC_DIR = "public"
+        var partial_layouts, static_layouts, compiled_layouts = newSeq[Layout]()
+        var partialCache, layoutCache = init_table[string, string]()
+        let files = c.fileitems
+        let current_dir = os.getCurrentDir()
+        let partial_dir = current_dir / "layouts/partials/"
+
+        # Split files between layout types: Partial, Static, Compiled
+        for file in files:
+            var l = Layout()
+            var f = add_template_file(file)
+
+            l.layout_path = file.path
+
+            if file.path.contains("partial"):
+                l.layout_type = PartialLayout
+                l.layout_file = f
+                partial_layouts.add(l)
+            elif file.filename.contains(".static"):
+                l.layout_type = StaticLayout
+                l.layout_file = f
+                static_layouts.add(l)
+            else:
+                l.layout_type = CompiledLayout
+                l.layout_file = f
+                compiled_layouts.add(l)
+
+        partialCache = cache_partials(partial_layouts)
+        layoutCache = cache_layouts(compiled_layouts, partialDir, partialCache)
+
+        compile_static_templates(project_dir, static_layouts, partial_dir, partialCache, project_data)
 
 proc build_file_hash(current_dir: string): Table[string, FileCollection] =
     result = init_table[string, FileCollection]()
