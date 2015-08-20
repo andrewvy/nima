@@ -72,9 +72,39 @@ proc cache_partials*(partials: seq[Layout]): Table[string, string] =
     for partial in partials:
         result[partial.layout_path] = cache_partial(partial)
 
+proc parse_content_json*(c: Content): JsonNode =
+    var json, json_line = ""
 
-proc parse_content(c: Content): string =
-    # Parse for partials here..
+    while true:
+        try:
+            json_line = c.content_file.readLine().strip()
+        except IOError:
+            echo "EOF, couldn't find JSON frontmatter."
+
+        if len(json_line) != 0: break
+
+    if json_line.startsWith("{"):
+        json &= json_line
+
+        while true:
+            try:
+                json_line = c.content_file.readLine().strip()
+            except IOError:
+                echo "Reached end of file! Malformed JSON frontmatter."
+                break
+
+            json &= json_line
+
+            if json_line.startsWith("}"):
+                break
+
+    try:
+        result = parseJson(json)
+    except:
+        echo "Invaid or missing JSON frontmatter"
+
+proc parse_content_markdown*(c: Content): string =
+    # Parse content and separate JSON frontmatter from markdown
     result = ""
 
     while true:
@@ -84,20 +114,6 @@ proc parse_content(c: Content): string =
         except IOError:
             break
 
-        var line_stripped = strip(line)
-        var reg = re("\".*\"")
+        var line_stripped = line.strip()
 
-        # Detects the JSON frontmatter in post content
-        if line_stripped.startsWith("{"):
-            var matches = line_stripped.findAll(reg)
-            if len(matches) > 0:
-                # Yo, there's json here we should parse!
-                echo "JSON FRONTMATTER"
-            else:
-                result = result & line & "\n"
-        else:
-            result = result & line & "\n"
-
-proc get_content_data*(c: Content): string =
-    result = parse_content(c)
-    c.content_file.close()
+        result = result & line & "\n"

@@ -1,3 +1,4 @@
+import consts
 import types
 import parser
 
@@ -24,10 +25,9 @@ proc compile_static_templates(project_dir: string, static_layouts: seq[Layout], 
     echo "Completed template compilation in "& ($(float(cl.clockStop - cl.clockStart)/1000000) & "ms")
 
 proc compile(project_dir: string, t: Table[string, FileCollection]) =
-    let project_file = "config.json"
     let current_dir = os.getCurrentDir()
     let partial_dir = current_dir / "layouts/partials/"
-    let project_data = parseFile(current_dir/project_file)
+    let project_data = parseFile(current_dir/CONFIG_FILE)
     var partial_layouts, static_layouts, compiled_layouts = newSeq[Layout]()
     var partialCache, layoutCache = init_table[string, string]()
 
@@ -68,6 +68,13 @@ proc compile(project_dir: string, t: Table[string, FileCollection]) =
             var c = Content()
             c.content_file = add_file(file)
 
+            # Parse JSON frontmatter
+            let content_json = parse_content_json(c)
+            let content_markdown = parse_content_markdown(c)
+
+            echo content_json["title"]
+            echo content_markdown
+
 proc build_file_hash(current_dir: string): Table[string, FileCollection] =
     result = init_table[string, FileCollection]()
 
@@ -97,10 +104,9 @@ proc build_file_hash(current_dir: string): Table[string, FileCollection] =
 
 proc build*(args: Table) =
     let current_dir = os.getCurrentDir()
-    let config_file = "config.json"
 
     try:
-        if existsFile(current_dir/config_file):
+        if existsFile(current_dir/CONFIG_FILE):
             echo "Building Nima project.."
             var file_hash = build_file_hash(current_dir)
 
