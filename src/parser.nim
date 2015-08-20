@@ -37,9 +37,6 @@ proc parse_for_partials(l: Layout, partialPath: string, partialCache: Table[stri
             result = result & line & "\n"
 
 proc render_layout*(l: string, s: JsonNode): string = result = l
-proc get_content_data*(c: Content): string =
-    result = readAll(c.content_file)
-    c.content_file.close()
 
 proc get_partial_data*(l: Layout): string =
     result = readAll(l.layout_file)
@@ -74,3 +71,33 @@ proc cache_partials*(partials: seq[Layout]): Table[string, string] =
 
     for partial in partials:
         result[partial.layout_path] = cache_partial(partial)
+
+
+proc parse_content(c: Content): string =
+    # Parse for partials here..
+    result = ""
+
+    while true:
+        var line = ""
+        try:
+            line = readLine(c.content_file)
+        except IOError:
+            break
+
+        var line_stripped = strip(line)
+        var reg = re("\".*\"")
+
+        # Detects the JSON frontmatter in post content
+        if line_stripped.startsWith("{"):
+            var matches = line_stripped.findAll(reg)
+            if len(matches) > 0:
+                # Yo, there's json here we should parse!
+                echo "JSON FRONTMATTER"
+            else:
+                result = result & line & "\n"
+        else:
+            result = result & line & "\n"
+
+proc get_content_data*(c: Content): string =
+    result = parse_content(c)
+    c.content_file.close()
