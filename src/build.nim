@@ -1,6 +1,7 @@
 import consts
 import types
 import parser
+import render
 
 import os, docopt, tables, strutils, json, stopwatch
 
@@ -64,8 +65,8 @@ proc compile(project_dir: string, t: Table[string, FileCollection]) =
 
     compile_static_templates(project_dir, static_layouts, partial_dir, partialCache, project_data)
 
-    if t.hasKey(".md"):
-        var filecol = t[".md"]
+    if t.hasKey(".rst"):
+        var filecol = t[".rst"]
 
         for file in filecol.fileitems:
             var c = Content()
@@ -73,12 +74,12 @@ proc compile(project_dir: string, t: Table[string, FileCollection]) =
 
             # Parse JSON frontmatter
             let content_json = parse_content_json(c)
-            let content_markdown = parse_content_markdown(c)
-
-            echo content_json["title"]
-            echo content_markdown
+            let content_rst = parse_content_rst(c)
 
             # TODO: (vy) Actually use the JSON + MD to render out to the content template
+            let rendered_rst = render_rst(content_rst)
+
+            echo rendered_rst
 
 proc build_file_hash(current_dir: string): Table[string, FileCollection] =
     result = init_table[string, FileCollection]()

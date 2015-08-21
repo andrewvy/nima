@@ -24,10 +24,10 @@ proc type_generate*(args: Table) =
             echo "Creating partial.. " & project_dir / "layouts/partials" / name & ".html"
             write_seed(name&".html", project_dir/"layouts/partials", seed_partial(name))
         of "content":
-            echo "Creating content.. " & project_dir / "content" / name / name_date & ".md"
+            echo "Creating content.. " & project_dir / "content" / name / name_date & ".rst"
             if not dirExists(project_dir / "content" / name):
                 createDir(project_dir / "content" / name)
-            write_seed(name_date&".md", project_dir/"content"/name, seed_content(name))
+            write_seed(name_date&".rst", project_dir/"content"/name, seed_content(name))
 
 proc sample_seed*(args: Table) =
     let project_dir = args["project_dir"]

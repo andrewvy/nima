@@ -103,8 +103,8 @@ proc parse_content_json*(c: Content): JsonNode =
     except:
         echo "Invaid or missing JSON frontmatter"
 
-proc parse_content_markdown*(c: Content): string =
-    # Parse content and separate JSON frontmatter from markdown
+proc parse_content_rst*(c: Content): string =
+    # Parse content and separate JSON frontmatter from rst
     result = ""
 
     while true:
