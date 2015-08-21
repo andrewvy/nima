@@ -8,6 +8,9 @@ proc writeTemplate(path: string, data: string) =
     writeFile(path, data)
 
 proc makeDirs(dirs: seq[string]) =
+    # Automatically create public folder if there isn't one..
+    if not dirExists("public"): createDir("public")
+
     for dir in dirs:
         if not dirExists("public/" & dir): createDir("public/" & dir)
 
@@ -74,6 +77,8 @@ proc compile(project_dir: string, t: Table[string, FileCollection]) =
 
             echo content_json["title"]
             echo content_markdown
+
+            # TODO: (vy) Actually use the JSON + MD to render out to the content template
 
 proc build_file_hash(current_dir: string): Table[string, FileCollection] =
     result = init_table[string, FileCollection]()
